@@ -3,6 +3,6 @@ Indian general elections are conducted every 5 years. With more than a billion p
 
 As a first experiment trying to gauge the intentions and to provide a quantitative measure of the biggest parties I have carried out a text mining project. I have used the party manifestos to identify what are the most frequently used words. This is a good way of starting off with the analysis.
 
-These are jupyter notebooks and the data used for this project are available to the public for free.
+The analysis was done in R and the report was produced in R markdowns and the data used for this project are available to the public for free.
 
 The manifesto for each party was downloaded from their respective website.
