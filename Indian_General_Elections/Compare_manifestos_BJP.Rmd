@@ -1,0 +1,97 @@
+---
+title: "Indian_GE_2019_Compare_manifestos_BJP"
+author: "Agastya"
+date: "May 15, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+An exploration of Indian General elections.
+
+Indian general elections are conducted every 5 years. With more than a billion people India is world's largest democracy. In addition to the size it being a a multi-party democracy adds to complications when it comes to choices.
+
+As a first experiment trying to gauge the intentions and to provide a quantitative measure of the biggest parties I have carried out a text mining project. I have used the party manifestos to identify what are the most frequently used words. This is a good way of starting off with the analysis.
+
+The manifesto for each party was downloaded from their respective website.
+## Install packages
+```{r message=FALSE}
+# install.packages('wordcloud')
+```
+
+
+
+## Including libraries
+```{r message=FALSE}
+library(pdftools)
+library(dplyr)
+library(tidytext)
+library(stringr)
+library(wordcloud)
+library(ggplot2)
+```
+
+## Read the data(pdf files)
+```{r}
+bjp_pdf = 'data/bjp_manifesto_2019.pdf';
+cong_pdf = 'data/congress_manifesto_2019.pdf';
+bjp_text <- pdf_text(bjp_pdf); #converts pdf files to text
+cong_text <- pdf_text(cong_pdf);
+```
+
+## Data conditioning
+### this converts the pdf into character for each page. we need to extract the strings out of these characters
+```{r}
+test <- bjp_text[3]; #read from the third page
+clean_separators <- function(input){
+  sapply(input, list) %>% 
+  str_split("\\r\\n", simplify = F ); ## \\r\\n is the separator in windows
+}
+test2 <- list(bjp_text);
+test2 <- lapply(bjp_text, clean_separators)
+```
+
+####Tidying data - convert to tibble
+```{r}
+temp1 <- clean_separators(bjp_text);
+temp2 <- unlist(temp1);
+bjp_tib <- tibble(line=1:length(temp2),text=temp2);
+table_df <- bjp_tib %>% unnest_tokens(word, text)
+table_df <- as.data.frame(table_df);
+table_df[20:30,]
+table_df1 <- table_df %>% filter(nchar(word)>2) # filter rows that have more than two letter words
+bjp_tidy <- table_df1 %>% anti_join(stop_words, by='word')
+```
+
+
+#### Most popular words
+```{r}
+bjp_tidy %>% count(word, sort = T)
+```
+
+
+## Plots
+### bar plot of the most popular words in BJP's manifesto
+```{r}
+bjp_tidy %>%
+  count(word, sort = TRUE) %>%
+  filter(n > 30) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_col() +
+  xlab(NULL) +
+  coord_flip()
+```
+
+#### wordcloud
+```{r}
+bjp_tidy %>%
+  anti_join(stop_words) %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
